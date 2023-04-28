@@ -14,15 +14,18 @@ import whisper
 # set parameters
 input_dir = Path("input")
 output_dir = Path("output")
+finished_dir = Path("finished")
+
 hf_token = "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"
-model = "large"
+model = "large-v2"
+
 language = "de"
 
 
 def append_audio(audio_file, temp_dir):
     audio_file_in = str(audio_file.resolve())
     audio_file_prep = str(Path(temp_dir, audio_file.name).with_suffix(".prep.wav").resolve())
-    os.system(f'/usr/local/bin/ffmpeg -i {repr(audio_file_in)} -vn -acodec pcm_s16le -ar 16000 -ac 1 -y {repr(audio_file_prep)}')
+    os.system(f'/usr/bin/ffmpeg -i {repr(audio_file_in)} -vn -acodec pcm_s16le -ar 16000 -ac 1 -y {repr(audio_file_prep)}')
     spacermilli = 2000
     spacer = AudioSegment.silent(duration=spacermilli)
     audio = AudioSegment.from_wav(audio_file_prep)
@@ -80,7 +83,7 @@ def split_audio(audio_file, groups, temp_dir):
 
 
 def transcribe_files(split_files, model, language):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device('cpu' if model in ['large', 'large-v2'] or not torch.cuda.is_available() else 'cuda')
     model = whisper.load_model(model, device)
     transcript = []
 
@@ -109,11 +112,13 @@ def transcribe(audio_file, model, language, out_file, temp_dir):
 
 if __name__ == '__main__':
     output_dir.mkdir(parents=True, exist_ok=True)
+    finished_dir.mkdir(parents=True, exist_ok=True)
     audio_files = [f for f in input_dir.glob('*') if Path.is_file(f)]
     for file in audio_files:
         temp_dir = Path('temp', file.name)
         temp_dir.mkdir(parents=True, exist_ok=True)
         out_file = Path('output', file.name).with_suffix('.txt')
-        transcribe(file, model, language)
-        temp_dir.r
+        transcribe(file, model, language, out_file, temp_dir)
+        file.rename(finished_dir / file.name)
+        rmtree(temp_dir)
 
