@@ -1,5 +1,6 @@
 .git
 .venv
 input/*
+audio_files/*
 output
 temp
