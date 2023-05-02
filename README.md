@@ -10,4 +10,4 @@ pip install -r requirements.txt
 ```
 
 # Usage
-Place audio files in subdirectory `input/`. Running `python transcribe.py` will create an output directory with transcripts.
+Place audio files in subdirectory `input/`. Running `python transcribe.py` will create an output directory with transcripts. Processed files will be moved to `processed` (regardless of success or error).

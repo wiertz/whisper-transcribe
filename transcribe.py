@@ -2,6 +2,8 @@
 
 import os
 import math
+import sys
+import subprocess
 from pathlib import Path
 from shutil import rmtree
 from time import strftime, gmtime
@@ -14,21 +16,24 @@ import whisper
 # set parameters
 input_dir = Path("input")
 output_dir = Path("output")
-finished_dir = Path("finished")
+processed_dir = Path("processed")
 ffmpeg_path = Path('/usr/local/bin/ffmpeg')
 offset_ms = 2000    # offset to add to the start of the audio file for better diarization (necessary?)
 # ffmpet_dir = Path('/usr/bin/ffmpeg')
-
 hf_token = "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"
 model = "large-v2"
 
-language = "de"
 
 
 def append_audio(audio_file, temp_dir, offset_ms):
     audio_file_in = str(audio_file.resolve())
     audio_file_prep = str(Path(temp_dir, audio_file.name).with_suffix(".prep.wav").resolve())
-    os.system(f'{str(ffmpeg_path)} -i {repr(audio_file_in)} -vn -acodec pcm_s16le -ar 16000 -ac 1 -y {repr(audio_file_prep)}')
+    subprocess.run(
+        [ffmpeg_path, '-i', audio_file_in, '-vn', '-acodec', 'pcm_s16le', '-ar', '16000', '-ac', '1', '-y', audio_file_prep], 
+        stdout=subprocess.DEVNULL, 
+        stderr=subprocess.DEVNULL, 
+        check=True
+        )
     spacer = AudioSegment.silent(duration=offset_ms)
     audio = AudioSegment.from_wav(audio_file_prep)
     audio = spacer.append(audio, crossfade=0)
@@ -116,14 +121,26 @@ def transcribe(audio_file, model, language, out_file, temp_dir, offset_ms):
 
 
 if __name__ == '__main__':
+    arguments = sys.argv
+    if len(sys.argv) != 2 or len(sys.argv[1]) != 2:
+        raise ValueError('provide language as parameter (e.g. "python transcribe.py de")')
+
+    language = sys.argv[1]
     output_dir.mkdir(parents=True, exist_ok=True)
-    finished_dir.mkdir(parents=True, exist_ok=True)
+    processed_dir.mkdir(parents=True, exist_ok=True)
     audio_files = [f for f in input_dir.glob('*') if Path.is_file(f)]
+
+    print(f'\nfound {len(audio_files)} files to transcribe...')
+
     for file in audio_files:
-        temp_dir = Path('temp', file.name)
-        temp_dir.mkdir(parents=True, exist_ok=True)
-        out_file = Path('output', file.name).with_suffix('.txt')
-        transcribe(file, model, language, out_file, temp_dir, offset_ms)
-        # file.rename(finished_dir / file.name)
-        rmtree(temp_dir)
+        print(f'beginning transcription of {file}... (language: {language})\n')
+        try:
+            temp_dir = Path('temp', file.name)
+            temp_dir.mkdir(parents=True, exist_ok=True)
+            out_file = Path('output', file.name).with_suffix('.txt')
+            transcribe(file, model, language, out_file, temp_dir, offset_ms)
+            print(f'\bfinished transcription of {file}... (language: {language})\n')
+        finally:
+            # file.rename(processed_dir / file.name)
+            rmtree(temp_dir)
 
