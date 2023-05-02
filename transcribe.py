@@ -75,8 +75,8 @@ def split_audio(audio_file, groups, temp_dir):
 
     split_files = []
     for idx, g in enumerate(groups):
-        start_ms = math.floor(g['start'] * 1000) - 50
-        end_ms = math.ceil(g['end'] * 1000) + 50
+        start_ms = math.floor(g['start'] * 1000)
+        end_ms = math.ceil(g['end'] * 1000)
         out_file = str(Path(temp_dir, str(idx) + '.wav'))
         audio[start_ms:end_ms].export(out_file, format='wav')
         split_files.append(out_file)
