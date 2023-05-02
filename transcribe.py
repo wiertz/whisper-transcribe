@@ -143,6 +143,6 @@ if __name__ == '__main__':
             transcribe(file, model, language, out_file, temp_dir, offset_ms)
             print(f'\bfinished transcription of {file}... (language: {language})\n')
         finally:
-            # file.rename(processed_dir / file.name)
+            file.rename(processed_dir / file.name)
             rmtree(temp_dir)
 
