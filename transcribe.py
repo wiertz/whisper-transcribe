@@ -46,7 +46,7 @@ def diarize(audio_file):
     return [{"start": d[0].start, "end": d[0].end, "speaker": d[-1]} for d in diarization.itertracks(yield_label = True)]
 
 
-def group_segments(diarization_result, offset_ms):
+def group_segments(diarization_result):
     groups = []
     current_start = None
     current_end = None
@@ -55,8 +55,8 @@ def group_segments(diarization_result, offset_ms):
     for d in diarization_result:
         if not current_speaker:
             current_speaker = d['speaker']
-            current_start = d['start'] + offset_ms
-            current_end = d['end'] + offset_ms
+            current_start = d['start']
+            current_end = d['end']
 
         elif current_speaker and d['speaker'] == current_speaker:
             current_end = d['end']
@@ -64,8 +64,8 @@ def group_segments(diarization_result, offset_ms):
         else:
             groups.append({'start': current_start, 'end': current_end, 'speaker': current_speaker})
             current_speaker = d['speaker']
-            current_start = d['start'] + offset_ms
-            current_end = d['end'] + offset_ms
+            current_start = d['start']
+            current_end = d['end']
 
     return groups
 
@@ -99,7 +99,7 @@ def transcribe_files(split_files, model, language):
 def timestamp_from_sec(time_in_seconds):
     time_hms = strftime('%H:%M:%S', gmtime(time_in_seconds))
     time_ds = str(round(time_in_seconds % 1, 1)).split('.')[-1]
-    return f'#{time_hms}.{time_ds}#'
+    return f'{time_hms}.{time_ds}'
 
 def transcribe(audio_file, model, language, out_file, temp_dir, offset_ms):
     audio_file_prep = append_audio(audio_file, temp_dir, offset_ms)
@@ -111,8 +111,8 @@ def transcribe(audio_file, model, language, out_file, temp_dir, offset_ms):
     with open(out_file, 'w') as f:
         transcript_with_info = zip(segment_groups, transcript)
         for segment in transcript_with_info:
-            time_stamp_end = timestamp_from_sec(segment[0]['end'])
-            f.write(f"{segment[0]['speaker']}:{segment[1]} {time_stamp_end}\n\n")
+            time_stamp_end = timestamp_from_sec(segment[0]['end'] - offset_ms / 1000)
+            f.write(f"{segment[0]['speaker']}:{segment[1]}\n{time_stamp_end}\n")
 
 
 if __name__ == '__main__':
