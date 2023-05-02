@@ -15,6 +15,9 @@ import whisper
 input_dir = Path("input")
 output_dir = Path("output")
 finished_dir = Path("finished")
+ffmpeg_path = Path('/usr/local/bin/ffmpeg')
+offset_ms = 2000    # offset to add to the start of the audio file for better diarization (necessary?)
+# ffmpet_dir = Path('/usr/bin/ffmpeg')
 
 hf_token = "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"
 model = "large-v2"
@@ -22,12 +25,11 @@ model = "large-v2"
 language = "de"
 
 
-def append_audio(audio_file, temp_dir):
+def append_audio(audio_file, temp_dir, offset_ms):
     audio_file_in = str(audio_file.resolve())
     audio_file_prep = str(Path(temp_dir, audio_file.name).with_suffix(".prep.wav").resolve())
-    os.system(f'/usr/bin/ffmpeg -i {repr(audio_file_in)} -vn -acodec pcm_s16le -ar 16000 -ac 1 -y {repr(audio_file_prep)}')
-    spacermilli = 2000
-    spacer = AudioSegment.silent(duration=spacermilli)
+    os.system(f'{str(ffmpeg_path)} -i {repr(audio_file_in)} -vn -acodec pcm_s16le -ar 16000 -ac 1 -y {repr(audio_file_prep)}')
+    spacer = AudioSegment.silent(duration=offset_ms)
     audio = AudioSegment.from_wav(audio_file_prep)
     audio = spacer.append(audio, crossfade=0)
     audio.export(audio_file_prep, format='wav')
@@ -44,7 +46,7 @@ def diarize(audio_file):
     return [{"start": d[0].start, "end": d[0].end, "speaker": d[-1]} for d in diarization.itertracks(yield_label = True)]
 
 
-def group_segments(diarization_result):
+def group_segments(diarization_result, offset_ms):
     groups = []
     current_start = None
     current_end = None
@@ -53,8 +55,8 @@ def group_segments(diarization_result):
     for d in diarization_result:
         if not current_speaker:
             current_speaker = d['speaker']
-            current_start = d['start']
-            current_end = d['end']
+            current_start = d['start'] + offset_ms
+            current_end = d['end'] + offset_ms
 
         elif current_speaker and d['speaker'] == current_speaker:
             current_end = d['end']
@@ -62,8 +64,8 @@ def group_segments(diarization_result):
         else:
             groups.append({'start': current_start, 'end': current_end, 'speaker': current_speaker})
             current_speaker = d['speaker']
-            current_start = d['start']
-            current_end = d['end']
+            current_start = d['start'] + offset_ms
+            current_end = d['end'] + offset_ms
 
     return groups
 
@@ -94,9 +96,13 @@ def transcribe_files(split_files, model, language):
 
     return transcript
 
+def timestamp_from_sec(time_in_seconds):
+    time_hms = strftime('%H:%M:%S', gmtime(time_in_seconds))
+    time_ds = str(round(time_in_seconds % 1, 1)).split('.')[-1]
+    return f'#{time_hms}.{time_ds}#'
 
-def transcribe(audio_file, model, language, out_file, temp_dir):
-    audio_file_prep = append_audio(audio_file, temp_dir)
+def transcribe(audio_file, model, language, out_file, temp_dir, offset_ms):
+    audio_file_prep = append_audio(audio_file, temp_dir, offset_ms)
     diarization = diarize(audio_file_prep)
     segment_groups = group_segments(diarization)
     split_files = split_audio(audio_file_prep, segment_groups, temp_dir)
@@ -105,9 +111,8 @@ def transcribe(audio_file, model, language, out_file, temp_dir):
     with open(out_file, 'w') as f:
         transcript_with_info = zip(segment_groups, transcript)
         for segment in transcript_with_info:
-            start_time = strftime('%H:%M:%S', gmtime(segment[0]['start']))
-            end_time = strftime('%H:%M:%S', gmtime(segment[0]['end']))
-            f.write(f"{segment[0]['speaker']} ({start_time}): {segment[1]}\n")
+            time_stamp_end = timestamp_from_sec(segment[0]['end'])
+            f.write(f"{segment[0]['speaker']}:{segment[1]} {time_stamp_end}\n\n")
 
 
 if __name__ == '__main__':
@@ -118,7 +123,7 @@ if __name__ == '__main__':
         temp_dir = Path('temp', file.name)
         temp_dir.mkdir(parents=True, exist_ok=True)
         out_file = Path('output', file.name).with_suffix('.txt')
-        transcribe(file, model, language, out_file, temp_dir)
-        file.rename(finished_dir / file.name)
+        transcribe(file, model, language, out_file, temp_dir, offset_ms)
+        # file.rename(finished_dir / file.name)
         rmtree(temp_dir)
 
