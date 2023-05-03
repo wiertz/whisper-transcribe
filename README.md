@@ -2,7 +2,7 @@
 whisper transcription with speaker diarization
 
 # Installation
-Make sure to use Python 3.9.16 and create a new virtual environment
+Make sure to use Python 3.9.16 and create a new virtual environment. After activating the environment, run the following commands to install all dependencies.
 
 ```
 pip install --upgrade pip
