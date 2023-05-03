@@ -71,6 +71,8 @@ def group_segments(diarization_result):
             current_start = d['start']
             current_end = d['end']
 
+        groups.append({'start': current_start, 'end': current_end, 'speaker': current_speaker})
+
     return groups
 
 
