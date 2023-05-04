@@ -2,12 +2,7 @@
 whisper transcription with speaker diarization
 
 # Installation
-Make sure to use Python 3.9.16 and create a new virtual environment. After activating the environment, run the following commands to install all dependencies.
-
-```
-pip install --upgrade pip
-pip install -r requirements.txt
-```
+Tested with Python 3.9.16. It is advised to run this in a new virtual environment to avoid dependency version conflicts. After activating the environment, run `pip install -r requirements.txt` to install all dependencies. (Installation of dependencies requires build tools to be available. On Linux/Ubuntu make sure to install `python3.9-dev` and `build-essential`).
 
 # Usage
-Place audio files in subdirectory `input/`. Running `python transcribe.py` will create an output directory with transcripts. Processed files will be moved to `processed` (regardless of success or error).
+Change parameters at the top of transcribe.py (particularly the path to ffmpeg). Place audio files in subdirectory `input/`. Running `python transcribe.py` will create an output directory with transcripts. Processed files will be moved to `processed` (regardless of success or error).
