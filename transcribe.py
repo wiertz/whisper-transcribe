@@ -23,6 +23,8 @@ offset_ms = 2000    # offset to add to the start of the audio file for better di
 hf_token = "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"
 model = "large-v2"
 
+# Allows fallback to cpu on apple silicon
+os.system('export PYTORCH_ENABLE_MPS_FALLBACK=1')
 
 
 def get_torch_device():
