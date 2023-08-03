@@ -3,6 +3,7 @@
 import math
 import sys
 import subprocess
+import os
 from pathlib import Path
 from shutil import rmtree
 from time import strftime, gmtime
@@ -16,13 +17,24 @@ import whisper
 input_dir = Path("input")
 output_dir = Path("output")
 processed_dir = Path("processed")
-ffmpeg_path = Path('/usr/local/bin/ffmpeg')
+ffmpeg_path = Path('/opt/homebrew/bin/ffmpeg')
 offset_ms = 2000    # offset to add to the start of the audio file for better diarization (necessary?)
 
 hf_token = "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"
 model = "large-v2"
 
 
+
+def get_torch_device():
+    if torch.cuda.is_available():
+        device = 'cuda'
+    elif torch.backends.mps.is_available():
+        device = 'mps'
+    else:
+        device = 'cpu'
+    print(f'   ...using torch device "{device}"')
+    return device
+    
 
 def append_audio(audio_file, temp_dir, offset_ms):
     audio_file_in = str(audio_file.resolve())
@@ -43,7 +55,7 @@ def append_audio(audio_file, temp_dir, offset_ms):
 def diarize(audio_file):
     from pyannote.audio import Pipeline
     pipeline = Pipeline.from_pretrained('pyannote/speaker-diarization@2.1', use_auth_token=hf_token)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device(get_torch_device())
     pipeline.to(device)
     FILE = {'uri': 'none', 'audio': str(audio_file)}
     diarization = pipeline(FILE)
@@ -71,7 +83,7 @@ def group_segments(diarization_result):
             current_start = d['start']
             current_end = d['end']
 
-        groups.append({'start': current_start, 'end': current_end, 'speaker': current_speaker})
+    groups.append({'start': current_start, 'end': current_end, 'speaker': current_speaker})
 
     return groups
 
@@ -91,14 +103,15 @@ def split_audio(audio_file, groups, temp_dir):
 
 
 def transcribe_files(split_files, model, language):
-    device = torch.device('cpu' if model in ['large', 'large-v2'] or not torch.cuda.is_available() else 'cuda')
+    # device = torch.device(get_torch_device())
+    device = 'cpu'
     print('   ...loading model')
-    model = whisper.load_model(model, device)
+    whisper_model = model = whisper.load_model(model, device)
     transcript = []
 
     for idx, f in enumerate(split_files):
         print(f'   ...transcribing segment {idx + 1} of {len(split_files)}')
-        t = model.transcribe(audio=f, language=language, word_timestamps=False)
+        t = whisper_model.transcribe(audio=f, language=language, word_timestamps=False)
         transcript.append(t['text'])
 
     return transcript
