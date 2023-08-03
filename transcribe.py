@@ -23,9 +23,6 @@ offset_ms = 2000    # offset to add to the start of the audio file for better di
 hf_token = "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"
 model = "large-v2"
 
-# Allows fallback to cpu on apple silicon
-os.system('export PYTORCH_ENABLE_MPS_FALLBACK=1')
-
 
 def get_torch_device():
     if torch.cuda.is_available():
@@ -105,7 +102,7 @@ def split_audio(audio_file, groups, temp_dir):
 
 
 def transcribe_files(split_files, model, language):
-    # device = torch.device(get_torch_device())
+    # device = torch.device(get_torch_device()) 
     device = 'cpu'
     print('   ...loading model')
     whisper_model = model = whisper.load_model(model, device)
