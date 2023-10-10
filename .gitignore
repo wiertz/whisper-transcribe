@@ -6,3 +6,4 @@ audio_files/*
 processed/*
 output
 temp
+global-config.yml
