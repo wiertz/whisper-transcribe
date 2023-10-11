@@ -38,7 +38,7 @@ if __name__ == '__main__':
             
             # transcribe
             subprocess.run(
-                [
+                x =[
                     cfg['whisperx_cmd'], 
                     f"{file}",
                     '--diarize',
@@ -46,6 +46,7 @@ if __name__ == '__main__':
                     '--language', cfg["language"],
                     '--hf_token', cfg["huggingface_token"],
                     '--output_dir', f"{directory}",
+                    '--device', cfg["device"],
                     '--output_format', 'vtt',
                     '--compute_type', 'int8'
                 ]
