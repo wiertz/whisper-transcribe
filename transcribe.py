@@ -38,7 +38,7 @@ if __name__ == '__main__':
             
             # transcribe
             subprocess.run(
-                x =[
+                [
                     cfg['whisperx_cmd'], 
                     f"{file}",
                     '--diarize',
