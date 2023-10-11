@@ -2,6 +2,7 @@
 .venv
 .DS_Store
 input/*
+!input/.gitignore
 audio_files/*
 processed/*
 output
