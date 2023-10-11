@@ -12,7 +12,7 @@ def read_config(yaml_file):
         return yaml.safe_load(f)
         
 global_cfg = read_config('global-config.yml')
-non_audio_extensions = ['.txt', '.yml', '.vtt']
+ignore_extensions = ['.txt', '.yml', '.vtt']
 
 if __name__ == '__main__':
     input_dirs = glob(str(Path(global_cfg['input_dir'], '*')) + '/')
@@ -24,7 +24,7 @@ if __name__ == '__main__':
         
         # identify relevant files
         files = [Path(directory, file) for file in os.listdir(directory)]
-        files_to_process = [f for f in files if os.path.isfile(f) and os.path.splitext(f)[-1].lower() not in non_audio_extensions]
+        files_to_process = [f for f in files if os.path.isfile(f) and os.path.splitext(f)[-1].lower() not in ignore_extensions]
         
         # set configuration 
         cfg = global_cfg
