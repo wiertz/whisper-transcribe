@@ -12,7 +12,7 @@ def read_config(yaml_file):
         return yaml.safe_load(f)
         
 global_cfg = read_config('global-config.yml')
-file_extensions = ['.wav', '.mp3', '.m4a']
+non_audio_extensions = ['.txt', '.yml', '.vtt']
 
 if __name__ == '__main__':
     input_dirs = glob(str(Path(global_cfg['input_dir'], '*')) + '/')
@@ -24,7 +24,7 @@ if __name__ == '__main__':
         
         # identify relevant files
         files = [Path(directory, file) for file in os.listdir(directory)]
-        files_to_process = [f for f in files if os.path.isfile(f) and os.path.splitext(f)[-1] in file_extensions]
+        files_to_process = [f for f in files if os.path.isfile(f) and os.path.splitext(f)[-1].lower() not in non_audio_extensions]
         
         # set configuration 
         cfg = global_cfg
@@ -37,7 +37,7 @@ if __name__ == '__main__':
         for file in files_to_process:
             
             # transcribe
-            subprocess.run(
+            process = subprocess.run(
                 [
                     cfg['whisperx_cmd'], 
                     f"{file}",
@@ -49,12 +49,15 @@ if __name__ == '__main__':
                     '--device', cfg["device"],
                     '--output_format', 'vtt',
                     '--compute_type', 'int8'
-                ]
+                ], check=False
                 )
             
             
             # add to processed file
             with open(Path(directory, 'processed.txt'), 'a') as processed_file:
+                if process.returncode != 0:
+                    processed_file.write('ERROR ')
+                
                 processed_file.write(str(file) + '\n')
             
             # densify vtt output
