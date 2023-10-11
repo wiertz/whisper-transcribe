@@ -6,6 +6,7 @@ from whisperx import utils
 from pathlib import Path
 from glob import glob
 import os
+from vtt_to_dense_vtt import vtt_to_dense_vtt
 
 def read_config(yaml_file):
     with open(yaml_file, 'r') as f:
@@ -66,3 +67,6 @@ if __name__ == '__main__':
             with open(Path(directory, 'processed.txt'), 'w') as processed_file:
                 processed_file.writelines([str(file)])
             
+            # densify vtt output
+            vtt_file = file + '.vtt'
+            vtt_to_dense_vtt(vtt_file)
