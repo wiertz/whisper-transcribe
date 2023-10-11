@@ -53,7 +53,7 @@ if __name__ == '__main__':
             
             
             # add to processed file
-            with open(Path(directory, 'processed.txt'), 'w') as processed_file:
+            with open(Path(directory, 'processed.txt'), 'a') as processed_file:
                 processed_file.writelines([str(file)])
             
             # densify vtt output
