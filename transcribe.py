@@ -55,7 +55,7 @@ if __name__ == '__main__':
             
             # add to processed file
             with open(Path(directory, 'processed.txt'), 'a') as processed_file:
-                processed_file.writelines([str(file)])
+                processed_file.write(str(file) + '\n')
             
             # densify vtt output
             vtt_file = str(file)[:-4] + '.vtt'
