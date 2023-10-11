@@ -7,3 +7,4 @@ processed/*
 output
 temp
 global-config.yml
+__*

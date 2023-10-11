@@ -4,6 +4,7 @@ import yaml
 from pathlib import Path
 from glob import glob
 import os
+import subprocess
 from vtt_to_dense_vtt import vtt_to_dense_vtt
 
 def read_config(yaml_file):
@@ -14,7 +15,7 @@ global_cfg = read_config('global-config.yml')
 file_extensions = ['.wav', '.mp3', '.m4a']
 
 if __name__ == '__main__':
-    input_dirs = glob(str(Path(global_cfg['input_dir'], '*')))
+    input_dirs = glob(str(Path(global_cfg['input_dir'], '*')) + '/')
     dirs_to_process = [d for d in input_dirs if not os.path.isfile(Path(d, 'processed.txt'))]
 
     print(f'\nfound {len(dirs_to_process)} directories to process...\n')
@@ -35,12 +36,26 @@ if __name__ == '__main__':
         # process files
         for file in files_to_process:
             
-            # TODO TRANSCRIBE
+            # transcribe
+            subprocess.run(
+                [
+                    cfg['whisperx_cmd'], 
+                    f"{file}",
+                    '--diarize',
+                    '--model', cfg["whisper_model"],
+                    '--language', cfg["language"],
+                    '--hf_token', cfg["huggingface_token"],
+                    '--output_dir', f"{directory}",
+                    '--output_format', 'vtt',
+                    '--compute_type', 'int8'
+                ]
+                )
+            
             
             # add to processed file
             with open(Path(directory, 'processed.txt'), 'w') as processed_file:
                 processed_file.writelines([str(file)])
             
             # densify vtt output
-            vtt_file = file + '.vtt'
+            vtt_file = str(file)[:-4] + '.vtt'
             vtt_to_dense_vtt(vtt_file)

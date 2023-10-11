@@ -2,6 +2,4 @@ input_dir: "input"
 huggingface_token: ""
 whisper_model: "large-v2"
 language: "en"
-torch_device: "cpu"
-batch_size: 8 # Default: 16
-compute_type: "int8"  # Higher accuracy: "float16"
+whisperx_cmd: "whisperx"
