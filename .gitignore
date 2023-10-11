@@ -1,6 +1,6 @@
 .git
 .venv
-
+.DS_Store
 input/*
 audio_files/*
 processed/*
