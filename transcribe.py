@@ -16,7 +16,7 @@ ignore_extensions = ['.txt', '.yml', '.vtt']
 
 if __name__ == '__main__':
     input_dirs = glob(str(Path(global_cfg['input_dir'], '*')) + '/')
-    dirs_to_process = [d for d in input_dirs if not os.path.isfile(Path(d, 'processed.txt'))]
+    dirs_to_process = [d for d in input_dirs if not os.path.isfile(Path(d, 'processed.txt')) and os.path.isfile(Path(d, 'config.yml'))]
 
     print(f'\nfound {len(dirs_to_process)} directories to process...\n')
 
