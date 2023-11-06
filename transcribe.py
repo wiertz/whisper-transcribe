@@ -58,7 +58,8 @@ if __name__ == '__main__':
                 if process.returncode != 0:
                     processed_file.write('ERROR ')
                 
-                processed_file.write(str(file) + '\n')
+                processed_file.write(str(file))
+                processed_file.write('\n')
             
             # densify vtt output
             vtt_file = str(file)[:-4] + '.vtt'
