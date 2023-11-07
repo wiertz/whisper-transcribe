@@ -1,6 +1,6 @@
-input_dir: "input"
+input_dir: "/path/to/input"
 huggingface_token: ""
 whisper_model: "large-v2"
 language: "en"
-whisperx_cmd: "whisperx"
+whisperx_cmd: "/path/to/whisperx"
 device: "cuda"
