@@ -10,8 +10,10 @@ from vtt_to_dense_vtt import vtt_to_dense_vtt
 def read_config(yaml_file):
     with open(yaml_file, 'r') as f:
         return yaml.safe_load(f)
+    
+cwd = os.path.abspath(os.path.dirname(__file__))
         
-global_cfg = read_config('global-config.yml')
+global_cfg = read_config(Path(cwd, 'global-config.yml'))
 ignore_extensions = ['.txt', '.yml', '.vtt']
 
 if __name__ == '__main__':
