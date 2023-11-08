@@ -50,7 +50,9 @@ if __name__ == '__main__':
                     '--output_dir', f"{directory}",
                     '--device', cfg["device"],
                     '--output_format', 'vtt',
-                    '--compute_type', 'int8'
+                    '--compute_type', 'int8',
+                    '--compression_ratio_threshold', '2',
+                    '--no_speech_threshold', '0.5'
                 ], check=False
                 )
             
