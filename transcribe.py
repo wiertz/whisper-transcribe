@@ -18,7 +18,7 @@ ignore_extensions = ['.txt', '.yml', '.vtt']
 
 if __name__ == '__main__':
     input_dirs = glob(str(Path(global_cfg['input_dir'], '*')) + '/')
-    dirs_to_process = [d for d in input_dirs if not os.path.isfile(Path(d, 'processed.txt')) and os.path.isfile(Path(d, 'config.yml'))]
+    dirs_to_process = [d for d in input_dirs if os.path.isfile(Path(d, 'config.yml'))]
 
     print(f'\nfound {len(dirs_to_process)} directories to process...\n')
 
@@ -26,7 +26,8 @@ if __name__ == '__main__':
         
         # identify relevant files
         files = [Path(directory, file) for file in os.listdir(directory)]
-        files_to_process = [f for f in files if os.path.isfile(f) and os.path.splitext(f)[-1].lower() not in ignore_extensions]
+        valid_files = [f for f in files if os.path.isfile(f) and os.path.splitext(f)[-1].lower() not in ignore_extensions]
+        unprocessed_files = [f for f in files if not os.path.isfile(os.path.splitext(f)[0] + '.vtt')]
         
         # set configuration 
         cfg = global_cfg
@@ -36,7 +37,7 @@ if __name__ == '__main__':
         
                 
         # process files
-        for file in files_to_process:
+        for file in unprocessed_files:
             
             # transcribe
             process = subprocess.run(
