@@ -5,8 +5,7 @@ from pathlib import Path
 from glob import glob
 import os
 import subprocess
-from watchdog.observers import Observer
-from watchdog.events import PatternMatchingEventHandler
+import time
 from vtt_to_dense_vtt import vtt_to_dense_vtt
 
 
@@ -53,45 +52,36 @@ def transcribe_file(new_file):
     with open(Path(parent_dir, 'processed.txt'), 'a') as processed_file:    
         processed_file.write(log_entry)
         processed_file.write('\n')
+        
+        
+def is_new_audio_file(file, audio_extensions):
+    if not os.path.splitext(file)[1] in audio_extensions:
+        return False
+    
+    if os.path.isfile(os.path.splitext(file)[0] + '.vtt'):
+        return False
+    
+    return True
 
 
-def find_unprocessed_files(dir, extension_patterns):
-    extensions = [p[1:] for p in extension_patterns]
+def find_unprocessed_files(dir, extensions):
     files_in_dir = glob(os.path.join(dir, '**'), recursive=True)
-    audio_files =  [f for f in files_in_dir if os.path.splitext(f)[1] in extensions]
-    new_audio_files = [f for f in audio_files if not os.path.isfile(os.path.splitext(f)[0] + '.vtt')]
+    new_audio_files = [f for f in files_in_dir if is_new_audio_file(f, extensions)]
     return new_audio_files
-
-
-def on_new_file(event):
-    if not event.is_directory:
-        print(event.src_path)
-        # transcribe_file(event.src_path)
-
-
+    
 
 if __name__ == '__main__':     
     cwd = os.path.abspath(os.path.dirname(__file__))
     global_cfg = read_config(Path(cwd, 'global-config.yml'))
-    audio_extensions = ['*.mp3', '*.m4a', '*.flac', '*.mp4', '*.wav', '*.wma', '*.aac', '*.aiff', '*.pcm', '*.ogg', '*.vobis']
+    audio_extensions = ['.mp3', '.m4a', '.flac', '.mp4', '.wav', '.wma', '.aac', '.aiff', '.pcm', '.ogg', '.vobis']
 
     # process new files
-    unprocessed_files = find_unprocessed_files(global_cfg['input_dir'], audio_extensions)
-    for f in unprocessed_files:
-        transcribe_file(f)
-
-    handler = PatternMatchingEventHandler(patterns = audio_extensions, case_sensitive = False)
-    handler.on_created = on_new_file
-    observer = Observer()
-    observer.schedule(handler, global_cfg['input_dir'], recursive =True)
-    observer.start()
-    print('Waiting for new files...')
-
-    try:
-        while observer.is_alive():
-            observer.join(1)
-    except KeyboardInterrupt:
-        print("Observer stopping")
-    finally:
-        observer.stop()
-        observer.join()
+    while True:
+        unprocessed_files = find_unprocessed_files(global_cfg['input_dir'], audio_extensions)
+        for f in unprocessed_files:
+            transcribe_file(f)
+        time.sleep(60)
+        
+        
+    
+    
