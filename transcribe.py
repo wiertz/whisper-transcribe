@@ -16,7 +16,7 @@ def read_config(yaml_file):
 
 
 def transcribe_file(new_file):
-    print('##### transcribing ' + new_file + ' ######')
+    print('\n##### transcribing ' + new_file + ' ######\n')
         
     # set configuration 
     cfg = global_cfg
@@ -85,6 +85,7 @@ if __name__ == '__main__':
     observer = Observer()
     observer.schedule(handler, global_cfg['input_dir'], recursive =True)
     observer.start()
+    print('Waiting for new files...')
 
     try:
         while observer.is_alive():
