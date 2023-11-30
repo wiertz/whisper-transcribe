@@ -16,6 +16,7 @@ def read_config(yaml_file):
 
 
 def transcribe_file(new_file):
+    print('##### transcribing ' + new_file + ' ######')
         
     # set configuration 
     cfg = global_cfg
