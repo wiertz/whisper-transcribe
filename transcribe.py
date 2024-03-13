@@ -7,6 +7,7 @@ import os
 import subprocess
 import time
 from vtt_to_dense_vtt import vtt_to_dense_vtt
+import argparse
 
 
 def read_config(yaml_file):
@@ -70,7 +71,12 @@ def find_unprocessed_files(dir, extensions):
     return new_audio_files
     
 
-if __name__ == '__main__':     
+if __name__ == '__main__':
+    
+    parser = argparse.ArgumentParser(description='Start transcription of files in input folder.')
+    parser.add_argument('--monitor', '-m', dest='monitor', action='store_true', help='continuously monitor input folder for new audio files.')
+    args = parser.parse_args()
+
     cwd = os.path.abspath(os.path.dirname(__file__))
     global_cfg = read_config(Path(cwd, 'global-config.yml'))
     audio_extensions = ['.mp3', '.m4a', '.flac', '.mp4', '.wav', '.wma', '.aac', '.aiff', '.pcm', '.ogg', '.vobis']
@@ -80,6 +86,8 @@ if __name__ == '__main__':
         unprocessed_files = find_unprocessed_files(global_cfg['input_dir'], audio_extensions)
         for f in unprocessed_files:
             transcribe_file(f)
+        if not args.monitor:
+            break
         time.sleep(60)
         
         
