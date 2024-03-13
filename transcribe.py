@@ -8,6 +8,7 @@ import subprocess
 import time
 from vtt_to_dense_vtt import vtt_to_dense_vtt
 from datetime import datetime
+import argparse
 
 
 def read_config(yaml_file):
@@ -75,8 +76,13 @@ def find_unprocessed_files(dir, extensions):
     return new_audio_files
     
 
-if __name__ == '__main__':     
+if __name__ == '__main__':
     print(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")} Transcription process launched')
+    
+    parser = argparse.ArgumentParser(description='Start transcription of files in input folder.')
+    parser.add_argument('--monitor', '-m', dest='monitor', action='store_true', help='continuously monitor input folder for new audio files.')
+    args = parser.parse_args()
+
     cwd = os.path.abspath(os.path.dirname(__file__))
     global_cfg = read_config(Path(cwd, 'global-config.yml'))
     audio_extensions = ['.mp3', '.m4a', '.flac', '.mp4', '.wav', '.wma', '.aac', '.aiff', '.pcm', '.ogg', '.vobis']
@@ -90,9 +96,11 @@ if __name__ == '__main__':
             return_code = transcribe_file(f)
             print(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")}', end='')
             print(f'    ...OK') if return_code == 0 else print(print('    ...FAILED'))
+        if not args.monitor:
+            break
         if not unprocessed_files:
             print(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")} Waiting for new files', end='\r')
-            time.sleep(60)
+        time.sleep(60)
         
         
     
