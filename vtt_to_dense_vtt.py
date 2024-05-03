@@ -57,9 +57,9 @@ def vtt_to_dense_vtt(in_file):
 
     for block in vtt:
         parsed_block = parse_block(block)
-        if parsed_block is None:
-            if len(current_block) > 0:
-                new_blocks.append(current_block)
+        if (parsed_block is None) and (len(current_block) > 0):
+            new_blocks.append(current_block)
+            current_block = {}
             continue
 
         begin, end, duration, speaker, text = parsed_block.values()
