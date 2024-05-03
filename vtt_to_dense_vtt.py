@@ -75,8 +75,12 @@ def vtt_to_dense_vtt(in_file):
             current_block = parsed_block.copy()
             continue
         
+        # if speaker missing, use previous speaker
+        if not parsed_block['speaker']:
+            parsed_block['speaker'] = current_block['speaker']
+        
         # extend current block if speaker continues and time limit not exceeded
-        if (parsed_block['speaker'] in [None, current_block['speaker']]) and (current_block['duration'] <= 30):
+        if (parsed_block['speaker'] == current_block['speaker']) and (current_block['duration'] <= 30):
             current_block['end'] = parsed_block['end']
             current_block['text'] += ' ' + parsed_block['text']
             current_block['duration'] += parsed_block['duration']
