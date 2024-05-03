@@ -51,32 +51,35 @@ def vtt_to_dense_vtt(in_file):
     with open(in_file) as f:
         vtt = f.read().split('\n\n')[1:]
 
-    current_speaker = None
+    current_block = None
     new_blocks = []
-    current_block = {}
 
     for block in vtt:
         parsed_block = parse_block(block)
-        if parsed_block is None:
-            if len(current_block) > 0:
-                new_blocks.append(current_block)
-                current_block = {}
+        
+        # reached end or inconsistency in file:
+        if not parsed_block:
+            if current_block: 
+                new_blocks.append(current_block.copy())
+                current_block = None
+            continue
+        
+        # no current block (first block)
+        if not current_block:
+            current_block = parsed_block.copy()
+            continue
+        
+        # new block, speaker changed or time limit reached:
+        if (parsed_block['speaker'] != current_block['speaker']) or (current_block['duration'] > 30):
+            new_blocks.append(current_block.copy())
+            current_block = parsed_block.copy()
             continue
 
-        begin, end, duration, speaker, text = parsed_block.values()
-        
-        if (speaker != current_speaker) or (current_block['duration'] > 30):
-            if current_speaker is not None:
-                new_blocks.append(current_block)
-            
-            current_speaker = speaker
-            current_block = parsed_block
-
-        else:
-            current_block['end'] = end
-            current_block['text'] += ' ' + text
-            current_block['duration'] += duration
-            
+        # extend current block
+        current_block['end'] = parsed_block['end']
+        current_block['text'] += ' ' + parsed_block['text']
+        current_block['duration'] += parsed_block['duration']
+    
 
     with open(out_file, 'w') as out:
         out.write(format_blocks(new_blocks))
