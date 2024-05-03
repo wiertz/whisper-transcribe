@@ -21,7 +21,13 @@ def parse_block(block):
         begin_str, end_str = timestamp.split(' --> ')
         begin = parse_timestamp(begin_str)
         end = parse_timestamp(end_str)
-        speaker, text = re.split(r'(?<=\]): ', content)
+        content_split = re.split(r'(?<=\]): ', content)
+        if len(content_split) > 1:
+            speaker = content_split[0]
+            text = ': '.join(content_split[1:])
+        else:
+            speaker = None
+            text = content_split[0]
         
         return({
             'begin': begin,
@@ -63,23 +69,22 @@ def vtt_to_dense_vtt(in_file):
                 new_blocks.append(current_block.copy())
                 current_block = None
             continue
-        
+               
         # no current block (first block)
         if not current_block:
             current_block = parsed_block.copy()
             continue
         
-        # new block, speaker changed or time limit reached:
-        if (parsed_block['speaker'] != current_block['speaker']) or (current_block['duration'] > 30):
-            new_blocks.append(current_block.copy())
-            current_block = parsed_block.copy()
+        # extend current block if speaker continues and time limit not exceeded
+        if (parsed_block['speaker'] in [None, current_block['speaker']]) and (current_block['duration'] <= 30):
+            current_block['end'] = parsed_block['end']
+            current_block['text'] += ' ' + parsed_block['text']
+            current_block['duration'] += parsed_block['duration']
             continue
-
-        # extend current block
-        current_block['end'] = parsed_block['end']
-        current_block['text'] += ' ' + parsed_block['text']
-        current_block['duration'] += parsed_block['duration']
-    
+        
+        # start new block with parsed block
+        new_blocks.append(current_block.copy())
+        current_block = parsed_block.copy()
 
     with open(out_file, 'w') as out:
         out.write(format_blocks(new_blocks))
