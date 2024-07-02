@@ -6,6 +6,7 @@ from glob import glob
 import os
 import subprocess
 import time
+import warnings
 from vtt_to_dense_vtt import vtt_to_dense_vtt
 from datetime import datetime
 import argparse
@@ -13,7 +14,11 @@ import argparse
 
 def read_config(yaml_file):
     with open(yaml_file, 'r') as f:
-        return yaml.safe_load(f)
+        cfg = yaml.safe_load(f)
+        if isinstance(cfg, dict):
+            return cfg
+        else:
+            return None
 
 
 def transcribe_file(new_file):
@@ -23,7 +28,9 @@ def transcribe_file(new_file):
     parent_dir = os.path.dirname(new_file)
     local_cfg_files = glob(str(Path(parent_dir, 'config.yml')))
     if local_cfg_files:
-        cfg.update(read_config(local_cfg_files[0]))
+        local_cfg = read_config(local_cfg_files[0])
+        if local_cfg is not None:
+            cfg.update(local_cfg)
 
     # transcribe
     process = subprocess.run(
