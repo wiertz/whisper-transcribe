@@ -4,5 +4,4 @@ whisper_model: "large-v2"
 language: "en"
 whisperx_cmd: "./whisperx"
 device: "cuda"
-ffmpeg_path: "/usr/bin/ffmpeg"
-log_file: "./log.txt
+log_file: "./log.txt"
