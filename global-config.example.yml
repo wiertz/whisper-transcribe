@@ -1,6 +1,8 @@
-input_dir: "/path/to/input"
+input_dir: "./input"
 huggingface_token: ""
 whisper_model: "large-v2"
 language: "en"
-whisperx_cmd: "/path/to/whisperx"
+whisperx_cmd: "./whisperx"
 device: "cuda"
+ffmpeg_path: "/usr/bin/ffmpeg"
+log_file: "./log.txt
