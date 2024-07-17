@@ -10,3 +10,4 @@ temp
 global-config.yml
 __*
 .sync*
+log.txt
