@@ -58,7 +58,7 @@ def transcribe_file(new_file):
         vtt_to_dense_vtt(vtt_file)
 
     else:
-        error_msg = 'Error: could not process audio file. Maybe audio file is corrupted?'
+        error_msg = f'Error: could not process {new_file}. Maybe audio file is corrupted?'
         logging.error(error_msg)
         with open(str(new_file)[:-4] + '.err', mode='w') as error_log:    
             error_log.write('Error: could not process audio file. Maybe audio file is corrupted?')
@@ -103,21 +103,20 @@ if __name__ == '__main__':
         format='%(asctime)s - %(levelname)s - %(message)s'
         )
     
-    logging.info(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")} Transcription process launched')
+    logging.info('Transcription process launched')
 
     # process new files
     while True:
         from datetime import datetime
         unprocessed_files = find_unprocessed_files(global_cfg['input_dir'], audio_extensions)
         for f in unprocessed_files:
-            logging.info(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")} Transcribing {f}')
+            logging.info('Transcribing {f}')
             return_code = transcribe_file(f)
             logging.info(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")}', end='')
             logging.info(f'    ...OK') if return_code == 0 else print(print('    ...FAILED'))
         if not args.monitor:
             break
-        if not unprocessed_files:
-            logging.info(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")} Waiting for new files', end='\r')
+        
         time.sleep(60)
         
         
