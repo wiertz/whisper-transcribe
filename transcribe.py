@@ -111,9 +111,8 @@ if __name__ == '__main__':
         unprocessed_files = find_unprocessed_files(global_cfg['input_dir'], audio_extensions)
         for f in unprocessed_files:
             logging.info('Transcribing {f}')
-            return_code = transcribe_file(f)
-            logging.info(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")}', end='')
-            logging.info(f'    ...OK') if return_code == 0 else print(print('    ...FAILED'))
+            transcribe_file(f)
+
         if not args.monitor:
             break
         
