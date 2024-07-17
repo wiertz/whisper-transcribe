@@ -6,7 +6,7 @@ from glob import glob
 import os
 import subprocess
 import time
-import warnings
+import logging
 from vtt_to_dense_vtt import vtt_to_dense_vtt
 from datetime import datetime
 import argparse
@@ -31,7 +31,7 @@ def transcribe_file(new_file):
         local_cfg = read_config(local_cfg_files[0])
         if local_cfg is not None:
             cfg.update(local_cfg)
-
+            
     # transcribe
     process = subprocess.run(
         [
@@ -58,8 +58,11 @@ def transcribe_file(new_file):
         vtt_to_dense_vtt(vtt_file)
 
     else:
+        error_msg = 'Error: could not process audio file. Maybe audio file is corrupted?'
+        logging.error(error_msg)
         with open(str(new_file)[:-4] + '.err', mode='w') as error_log:    
             error_log.write('Error: could not process audio file. Maybe audio file is corrupted?')
+            
 
     return process.returncode
         
@@ -84,7 +87,6 @@ def find_unprocessed_files(dir, extensions):
     
 
 if __name__ == '__main__':
-    print(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")} Transcription process launched')
     
     parser = argparse.ArgumentParser(description='Start transcription of files in input folder.')
     parser.add_argument('--monitor', '-m', dest='monitor', action='store_true', help='continuously monitor input folder for new audio files.')
@@ -93,20 +95,29 @@ if __name__ == '__main__':
     cwd = os.path.abspath(os.path.dirname(__file__))
     global_cfg = read_config(Path(cwd, 'global-config.yml'))
     audio_extensions = ['.mp3', '.m4a', '.flac', '.mp4', '.wav', '.wma', '.aac', '.aiff', '.pcm', '.ogg', '.vobis']
+    
+    # init logging
+    logging.basicConfig(
+        filename=global_cfg.get("log_file", "log.txt"), 
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+        )
+    
+    logging.info(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")} Transcription process launched')
 
     # process new files
     while True:
         from datetime import datetime
         unprocessed_files = find_unprocessed_files(global_cfg['input_dir'], audio_extensions)
         for f in unprocessed_files:
-            print(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")} Transcribing {f}')
+            logging.info(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")} Transcribing {f}')
             return_code = transcribe_file(f)
-            print(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")}', end='')
-            print(f'    ...OK') if return_code == 0 else print(print('    ...FAILED'))
+            logging.info(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")}', end='')
+            logging.info(f'    ...OK') if return_code == 0 else print(print('    ...FAILED'))
         if not args.monitor:
             break
         if not unprocessed_files:
-            print(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")} Waiting for new files', end='\r')
+            logging.info(f'{datetime.now().strftime("%Y-%m-%d %H:%m:%S")} Waiting for new files', end='\r')
         time.sleep(60)
         
         
