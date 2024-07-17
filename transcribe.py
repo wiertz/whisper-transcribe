@@ -110,7 +110,7 @@ if __name__ == '__main__':
         from datetime import datetime
         unprocessed_files = find_unprocessed_files(global_cfg['input_dir'], audio_extensions)
         for f in unprocessed_files:
-            logging.info('Transcribing {f}')
+            logging.info(f'Transcribing {f}')
             transcribe_file(f)
 
         if not args.monitor:
