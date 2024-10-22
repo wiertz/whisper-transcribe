@@ -63,6 +63,7 @@ def transcribe_file(new_file):
         with open(str(new_file)[:-4] + '.err', mode='w') as error_log:    
             error_log.write('Error: could not process audio file. Maybe audio file is corrupted?')
             
+    os.remove(new_file)
 
     return process.returncode
         
