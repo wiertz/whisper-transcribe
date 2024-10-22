@@ -8,7 +8,6 @@ import subprocess
 import time
 import logging
 from vtt_to_dense_vtt import vtt_to_dense_vtt
-from datetime import datetime
 import argparse
 
 
@@ -108,7 +107,6 @@ if __name__ == '__main__':
 
     # process new files
     while True:
-        from datetime import datetime
         unprocessed_files = find_unprocessed_files(global_cfg['input_dir'], audio_extensions)
         for f in unprocessed_files:
             logging.info(f'Transcribing {f}')
